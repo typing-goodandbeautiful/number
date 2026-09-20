@@ -1,0 +1,22 @@
+[
+  {
+    "id": "page1",
+    "codes": ["adminyo"],
+    "htmlFile": "pages/page1.html"
+  },
+  {
+    "id": "page2",
+    "codes": ["no67"],
+    "htmlFile": "pages/page2.html"
+  },
+  {
+    "id": "page3",
+    "codes": ["caleb", "grewe", "gru"],
+    "htmlFile": "pages/page3.html"
+  },
+  {
+    "id": "page4",
+    "codes": ["crash"],
+    "htmlFile": "pages/page4.html"
+  }
+]
