@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grey</title>
+</head>
+<body>
+    <style>
+        /* BASE THEME (Claude Light: warm pampas and soft clay) */
+        :root {
+            --bg-color: #F4F3EE;
+            --card-bg: #FFFFFF;
+            --text-color: #191919;
+            --accent-color: #D97757;
+            --accent-hover: #C15F3C;
+            --border-color: #E2E0D5;
+            --input-bg: #FFFFFF;
+            --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #141413;
+                --card-bg: #1E1E1C;
+                --text-color: #F4F3EE;
+                --accent-color: #D97757;
+                --accent-hover: #E08B6F;
+                --border-color: #383734;
+                --input-bg: #292825;
+            }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-color);
+            font-family: var(--font-family);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            font-size: 1.35rem;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 1rem;
+            color: var(--text-color);
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+            margin-bottom: 0.5rem;
+            font-family: inherit;
+            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        input[type="text"].error-field {
+            border: 1px solid #ff4d4d;
+            background-color: rgba(255, 77, 77, 0.08);
+        }
+
+        .error-message {
+            color: #ff4d4d;
+            font-size: 0.875rem;
+            text-align: left;
+            margin-bottom: 1rem;
+            min-height: 1.25rem;
+            font-weight: 500;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.85rem;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .intro-wrapper {
+            margin: 0;
+            display: inline-block;
+            animation: fadeOutContainer 0.25s ease 1.75s forwards;
+        }
+
+        .animated-text {
+            margin: 0;
+            font-size: 1.85rem;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        .dot {
+            opacity: 0;
+            display: inline-block;
+            animation: bounceInDot 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .dot1 { animation-delay: 0.3s; }
+        .dot2 { animation-delay: 0.5s; }
+        .dot3 { animation-delay: 0.7s; }
+
+        .form-content {
+            animation: fadeInContent 0.5s ease forwards;
+        }
+
+        @keyframes bounceInDot {
+            0% { opacity: 0; transform: translateY(6px); }
+            70% { transform: translateY(-3px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOutContainer {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.97); }
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <div class="card" id="cardContainer">
+        <div class="intro-wrapper">
+            <h1 class="animated-text">Hello<span class="dot dot1">.</span><span class="dot dot2">.</span><span class="dot dot3">.</span></h1>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(showForm, 2000); 
+        };
+
+        function showForm() {
+            const card = document.getElementById('cardContainer');
+            card.innerHTML = `
+                <div class="form-content">
+                    <label for="nameInput">Sorry, I forgot how to spell your name. Is it Gray or Grey?</label>
+                    <input type="text" id="nameInput" placeholder="Type your name here..." onkeydown="handleKeyPress(event)" oninput="clearError()">
+                    <div id="errorDisplay" class="error-message"></div>
+                    <button class="submit-btn" onclick="submitName()">Submit</button>
+                </div>
+            `;
+            document.getElementById('nameInput').focus();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                submitName();
+            }
+        }
+
+        function clearError() {
+            const inputField = document.getElementById('nameInput');
+            const errorText = document.getElementById('errorDisplay');
+            inputField.classList.remove('error-field');
+            errorText.textContent = '';
+        }
+
+        function submitName() {
+            const inputField = document.getElementById('nameInput');
+            const errorText = document.getElementById('errorDisplay');
+            const originalInput = inputField.value.trim();
+            const card = document.getElementById('cardContainer');
+
+            if (originalInput === '') {
+                inputField.classList.add('error-field');
+                errorText.textContent = 'Please type a name before submitting.';
+                inputField.focus();
+                return;
+            }
+
+            const cleanedInput = originalInput.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/\s+/g,"").toLowerCase();
+
+            let greetingTarget = '';
+            if (cleanedInput === 'grey') {
+                greetingTarget = 'Grey';
+            } else if (cleanedInput === 'gray') {
+                greetingTarget = 'Gray';
+            } else {
+                inputField.classList.add('error-field');
+                errorText.textContent = 'Error: The name must be Grey or Gray.';
+                inputField.focus();
+                return;
+            }
+
+            card.innerHTML = '';
+            const freshWrapper = document.createElement('div');
+            freshWrapper.className = 'form-content';
+            freshWrapper.innerHTML = `<h1 class="animated-text">Hello ${greetingTarget}!</h1>`;
+            card.appendChild(freshWrapper);
+        }
+    </script>
+
+</body>
+</html>
