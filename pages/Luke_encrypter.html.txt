@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luke Encryptor & Decryptor</title>
+    <style>
+        :root {
+            --primary-color: #007BFF;
+            --hover-color: #0056b3;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 25px;
+            background: #eee;
+            padding: 4px;
+            border-radius: 30px;
+            position: relative;
+        }
+        .toggle-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            z-index: 2;
+            transition: color 0.3s ease;
+        }
+        .toggle-btn.active {
+            color: #fff;
+        }
+        .toggle-slider {
+            position: absolute;
+            left: 4px;
+            top: 4px;
+            bottom: 4px;
+            width: calc(50% - 4px);
+            background-color: var(--primary-color);
+            border-radius: 30px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+        .decrypt-active .toggle-slider {
+            transform: translateX(100%);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            padding-left: 10px;
+        }
+        input[type="text"], input[type="password"], input[type="file"] {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--primary-color);
+        }
+        input[type="file"] {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            cursor: pointer;
+        }
+        input[type="file"]::file-selector-button {
+            border: none;
+            background: #e0e0e0;
+            padding: 6px 16px;
+            border-radius: 30px;
+            color: #333;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-right: 10px;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background: #d0d0d0;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: var(--hover-color);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .processing { color: #ffc107; }
+    </style>
+</head>
+<body>
+    <h2 id="modeTitle">Encrypt File to .luke</h2>
+    <div class="toggle-container" id="toggleContainer">
+        <div class="toggle-btn active" id="encryptTab" onclick="setMode('encrypt')">Encrypt</div>
+        <div class="toggle-btn" id="decryptTab" onclick="setMode('decrypt')">Decrypt</div>
+        <div class="toggle-slider"></div>
+    </div>
+    <div class="form-group">
+        <label id="fileLabel" for="fileInput">Select File to Encrypt:</label>
+        <input type="file" id="fileInput">
+    </div>
+    <div class="form-group">
+        <label for="passwordInput">Security Password:</label>
+        <input type="password" id="passwordInput" placeholder="Enter password">
+    </div>
+    <button id="actionBtn" onclick="handleAction()">Encrypt & Download</button>
+    <div id="status"></div>
+        <script>
+        let currentMode = 'encrypt';
+
+        function setMode(mode) {
+            currentMode = mode;
+            const container = document.getElementById('toggleContainer');
+            const title = document.getElementById('modeTitle');
+            const fileLabel = document.getElementById('fileLabel');
+            const actionBtn = document.getElementById('actionBtn');
+            const encryptTab = document.getElementById('encryptTab');
+            const decryptTab = document.getElementById('decryptTab');
+            
+            document.getElementById('status').innerText = "";
+            document.getElementById('fileInput').value = "";
+
+            if (mode === 'encrypt') {
+                container.classList.remove('decrypt-active');
+                encryptTab.classList.add('active');
+                decryptTab.classList.remove('active');
+                title.innerText = "Encrypt File to .luke";
+                fileLabel.innerText = "Select Any File to Encrypt:";
+                actionBtn.innerText = "Encrypt & Download";
+            } else {
+                container.classList.add('decrypt-active');
+                decryptTab.classList.add('active');
+                encryptTab.classList.remove('active');
+                title.innerText = "Decrypt File";
+                fileLabel.innerText = "Select Any File to Decrypt:";
+                actionBtn.innerText = "Decrypt & Download";
+            }
+        }
+
+        function updateStatus(text, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = text;
+            statusEl.className = type;
+        }
+
+        async function handleAction() {
+            const fileInput = document.getElementById('fileInput');
+            const password = document.getElementById('passwordInput').value;
+
+            if (fileInput.files.length === 0) {
+                alert('Please select a file.');
+                return;
+            }
+            if (!password) {
+                alert('Please enter your password.');
+                return;
+            }
+
+            const targetedFile = fileInput.files[0];
+
+            if (currentMode === 'encrypt') {
+                await processEncrypt(targetedFile, password);
+            } else {
+                await processDecrypt(targetedFile, password);
+            }
+        }
+
+        async function deriveKey(password, salt, usage) {
+            const enc = new TextEncoder();
+            const baseKey = await window.crypto.subtle.importKey(
+                "raw", 
+                enc.encode(password), 
+                { name: "PBKDF2" }, 
+                false, 
+                ["deriveKey"]
+            );
+
+            return await window.crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                baseKey,
+                { name: "AES-GCM", length: 256 },
+                false,
+                [usage]
+            );
+        }
+        async function processEncrypt(file, password) {
+            updateStatus("Encrypting securely...", "processing");
+            try {
+                const fileBytes = await file.arrayBuffer();
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const key = await deriveKey(password, salt, "encrypt");
+
+                const encryptedBytes = await window.crypto.subtle.encrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    fileBytes
+                );
+
+                const nameEncoder = new TextEncoder();
+                const filenameBytes = nameEncoder.encode(file.name);
+                const filenameLength = filenameBytes.byteLength;
+
+                const headerLength = 16 + 12 + 2 + filenameLength;
+                const resultBuffer = new Uint8Array(headerLength + encryptedBytes.byteLength);
+                
+                resultBuffer.set(salt, 0);
+                resultBuffer.set(iv, 16);
+                
+                const view = new DataView(resultBuffer.buffer);
+                view.setUint16(28, filenameLength);
+                
+                resultBuffer.set(filenameBytes, 30);
+                resultBuffer.set(new Uint8Array(encryptedBytes), headerLength);
+
+                const blob = new Blob([resultBuffer], { type: "application/octet-stream" });
+                let downloadName = file.name;
+                if (!downloadName.toLowerCase().endsWith('.luke')) {
+                    downloadName += ".luke";
+                }
+                triggerDownload(blob, downloadName);
+                updateStatus("Lock successful! File packed with metadata.", "success");
+            } catch (error) {
+                console.error(error);
+                updateStatus("Encryption failed.", "error");
+            }
+        }
+
+        async function processDecrypt(file, password) {
+            updateStatus("Decrypting file...", "processing");
+            try {
+                const combinedBuffer = await file.arrayBuffer();
+                if (combinedBuffer.byteLength < 31) { 
+                    updateStatus("Decryption failed: File structure is invalid.", "error");
+                    return;
+                }
+
+                const salt = new Uint8Array(combinedBuffer, 0, 16);
+                const iv = new Uint8Array(combinedBuffer, 16, 12);
+                
+                const view = new DataView(combinedBuffer, 28, 2);
+                const filenameLength = view.getUint16(0);
+                
+                const headerLength = 16 + 12 + 2 + filenameLength;
+                if (combinedBuffer.byteLength < headerLength) {
+                    updateStatus("Decryption failed: Corrupted file metadata.", "error");
+                    return;
+                }
+
+                const filenameBytes = new Uint8Array(combinedBuffer, 30, filenameLength);
+                const nameDecoder = new TextDecoder();
+                const restoredFilename = nameDecoder.decode(filenameBytes);
+                const encryptedData = new Uint8Array(combinedBuffer, headerLength);
+
+                const key = await deriveKey(password, salt, "decrypt");
+                const decryptedBytes = await window.crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    encryptedData
+                );
+
+                const blob = new Blob([decryptedBytes], { type: "application/octet-stream" });
+                triggerDownload(blob, restoredFilename);
+                updateStatus(`Unlock successful! Restored as: ${restoredFilename}`, "success");
+            } catch (error) {
+                console.error(error);
+                updateStatus("Decryption failed. Bad password or corrupted data.", "error");
+            }
+        }
+
+        function triggerDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
+
