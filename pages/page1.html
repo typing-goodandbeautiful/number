@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High FPS Admin Dashboard</title>
+    <style>
+        body {
+            background-color: #111827;
+            color: #f3f4f6;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #1f2937;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #374151;
+        }
+        h1 { margin: 0; font-size: 24px; color: #ffffff; }
+        .subtitle { margin: 4px 0 0 0; font-size: 13px; color: #9ca3af; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background-color: #1f2937;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+        .stat-title { font-size: 11px; color: #9ca3af; text-transform: uppercase; }
+        .stat-value { font-size: 24px; font-weight: bold; margin-top: 8px; color: #818cf8; }
+
+        .graphs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        .graph-card {
+            background-color: #1f2937;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+        .graph-title { font-size: 14px; font-weight: bold; margin-bottom: 12px; color: #e5e7eb; }
+
+        .sparkline-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 180px;
+            border-bottom: 2px solid #374151;
+            padding-bottom: 10px;
+        }
+        .spark-node {
+            flex: 1;
+            background-color: #a855f7;
+            border-radius: 3px 3px 0 0;
+            height: 50px;
+            transition: height 0.18s linear;
+        }
+
+        svg {
+            width: 100%;
+            height: 180px;
+            background-color: #111827;
+            border-radius: 6px;
+            border-bottom: 2px solid #374151;
+        }
+        .grid-line { stroke: #1f2937; stroke-width: 1; }
+        .axis-text { font-size: 10px; fill: #6b7280; }
+
+        path {
+            transition: d 0.2s linear;
+        }
+
+        .legend-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 11px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; color: #9ca3af; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            margin-right: 6px;
+            animation: pulse 2s infinite;
+        }
+        .status-indicator.inactive {
+            background-color: #ef4444;
+            animation: none;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .input-section {
+            background-color: #1f2937;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+            margin-bottom: 24px;
+        }
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .input-field label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .input-field input {
+            background-color: #111827;
+            border: 1px solid #374151;
+            color: #f3f4f6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .input-field input:focus {
+            outline: none;
+            border-color: #6b7280;
+        }
+
+        .button-section {
+            background-color: #1f2937;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: transparent;
+            color: #e5e7eb;
+            border: 1px solid #6b7280;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+        button:hover {
+            background-color: #374151;
+            border-color: #9ca3af;
+        }
+        button:active {
+            background-color: #4b5563;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Welcome to Admin</h1>
+            <p class="subtitle">Live Infrastructure Monitors (Stabilized Moderate Stream Edition)</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title"><span class="status-indicator"></span>Cluster Traffic</div>
+                <div id="metricTraffic" class="stat-value">210 req/s</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">System Latency</div>
+                <div id="metricLatency" class="stat-value">18 ms</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Mean Engine Load</div>
+                <div id="metricMemory" class="stat-value">52.0%</div>
+            </div>
+        </div>
+
+        <div class="graphs-grid">
+            <div class="graph-card">
+                <div class="graph-title">Network Throughput Waveform</div>
+                <div class="sparkline-container" id="sparklineContainer">
+                    <div class="spark-node" style="height: 40%"></div>
+                    <div class="spark-node" style="height: 55%"></div>
+                    <div class="spark-node" style="height: 48%"></div>
+                    <div class="spark-node" style="height: 65%"></div>
+                    <div class="spark-node" style="height: 70%"></div>
+                    <div class="spark-node" style="height: 52%"></div>
+                    <div class="spark-node" style="height: 63%"></div>
+                    <div class="spark-node" style="height: 80%"></div>
+                    <div class="spark-node" style="height: 74%"></div>
+                    <div class="spark-node" style="height: 85%"></div>
+                    <div class="spark-node" style="height: 90%"></div>
+                    <div class="spark-node" style="height: 78%"></div>
+                </div>
+            </div>
+
+            <div class="graph-card">
+                <div class="graph-title">Hardware Engine Core Allocation (Multi-Line Linear View)</div>
+                <div class="legend-row">
+                    <div class="legend-item"><div class="legend-dot" style="background-color: #3b82f6;"></div>Core System</div>
+                    <div class="legend-item"><div class="legend-dot" style="background-color: #10b981;"></div>Memory Array</div>
+                    <div class="legend-item"><div class="legend-dot" style="background-color: #f59e0b;"></div>I/O Thread</div>
+                </div>
+                <svg id="svgMultiGraph" viewBox="0 0 500 180">
+                    <line class="grid-line" x1="0" y1="45" x2="500" y2="45" />
+                    <line class="grid-line" x1="0" y1="90" x2="500" y2="90" />
+                    <line class="grid-line" x1="0" y1="135" x2="500" y2="135" />
+                    
+                    <path id="multiPathLine1" d="M 0 90 L 50 90 L 100 90 L 150 90 L 200 90 L 250 90 L 300 90 L 350 90 L 400 90 L 500 90" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <path id="multiPathLine2" d="M 0 90 L 50 90 L 100 90 L 150 90 L 200 90 L 250 90 L 300 90 L 350 90 L 400 90 L 500 90" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    <path id="multiPathLine3" d="M 0 90 L 50 90 L 100 90 L 150 90 L 200 90 L 250 90 L 300 90 L 350 90 L 400 90 L 500 90" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                    
+                    <text class="axis-text" x="15" y="172">10s ago</text>
+                    <text class="axis-text" x="455" y="172">Now</text>
+                </svg>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <div class="input-field">
+                    <label>Threshold Alert</label>
+                    <input type="text" placeholder="Enter value">
+                </div>
+                <div class="input-field">
+                    <label>Update Interval (ms)</label>
+                    <input type="text" placeholder="240">
+                </div>
+                <div class="input-field">
+                    <label>Max Connections</label>
+                    <input type="text" placeholder="Enter value">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-section">
+            <button id="btnApply">Apply Settings</button>
+            <button id="btnExport">Export Data</button>
+            <button id="btnClear">Clear History</button>
+        </div>
+    </div>
+
+    <script>
+        var isRunning = true;
+        var updateInterval = null;
+
+        function updateMetrics() {
+            var p1 = String("90,95,80,100,115,75,90,110,85,95").split(",");
+            var p2 = String("75,80,95,70,85,90,110,80,95,100").split(",");
+            var p3 = String("115,110,125,105,120,135,115,120,110,125").split(",");
+
+            for (var idx = 0; idx < 10; idx++) {
+                p1[idx] = parseInt(p1[idx]);
+                p2[idx] = parseInt(p2[idx]);
+                p3[idx] = parseInt(p3[idx]);
+            }
+
+            updateInterval = setInterval(function() {
+                if (!isRunning) return;
+
+                p1.shift(); p1.push(Math.floor(Math.random() * 110) + 35);
+                p2.shift(); p2.push(Math.floor(Math.random() * 110) + 35);
+                p3.shift(); p3.push(Math.floor(Math.random() * 110) + 35);
+
+                var s1 = "M 0 " + p1[0] + " L 50 " + p1[1] + " L 100 " + p1[2] + " L 150 " + p1[3] + " L 200 " + p1[4] + " L 250 " + p1[5] + " L 300 " + p1[6] + " L 350 " + p1[7] + " L 400 " + p1[8] + " L 500 " + p1[9];
+                var s2 = "M 0 " + p2[0] + " L 50 " + p2[1] + " L 100 " + p2[2] + " L 150 " + p2[3] + " L 200 " + p2[4] + " L 250 " + p2[5] + " L 300 " + p2[6] + " L 350 " + p2[7] + " L 400 " + p2[8] + " L 500 " + p2[9];
+                var s3 = "M 0 " + p3[0] + " L 50 " + p3[1] + " L 100 " + p3[2] + " L 150 " + p3[3] + " L 200 " + p3[4] + " L 250 " + p3[5] + " L 300 " + p3[6] + " L 350 " + p3[7] + " L 400 " + p3[8] + " L 500 " + p3[9];
+
+                document.getElementById('multiPathLine1').setAttribute('d', s1);
+                document.getElementById('multiPathLine2').setAttribute('d', s2);
+                document.getElementById('multiPathLine3').setAttribute('d', s3);
+
+                var blockContainer = document.getElementById('sparklineContainer');
+                var singleBars = blockContainer.getElementsByClassName('spark-node');
+                for(var i = 0; i < singleBars.length - 1; i++) {
+                    singleBars[i].style.height = singleBars[i+1].style.height;
+                }
+                var freshRandomHeight = Math.floor(Math.random() * 60) + 30;
+                singleBars[singleBars.length - 1].style.height = freshRandomHeight + "%";
+
+                document.getElementById('metricTraffic').textContent = Math.floor(freshRandomHeight * 3.6) + " req/s";
+                document.getElementById('metricLatency').textContent = (Math.floor(Math.random() * 6) + 14) + " ms";
+                
+                var finalEndpointAverage = Math.floor((p1[9] + p2[9] + p3[9]) / 3);
+                var normalizedLoadPercent = Math.floor(((180 - finalEndpointAverage) / 145) * 100);
+                if (normalizedLoadPercent < 15) normalizedLoadPercent = 28;
+                if (normalizedLoadPercent > 98) normalizedLoadPercent = 94;
+                document.getElementById('metricMemory').textContent = normalizedLoadPercent + ".0%";
+
+            }, 240); 
+        }
+
+        window.onload = function() {
+            updateMetrics();
+
+            document.getElementById('btnApply').addEventListener('click', function() {
+                alert('Settings applied');
+            });
+
+            document.getElementById('btnExport').addEventListener('click', function() {
+                alert('Data exported');
+            });
+
+            document.getElementById('btnClear').addEventListener('click', function() {
+                if (confirm('Clear all history?')) {
+                    alert('History cleared');
+                }
+            });
+        };
+    </script>
+</body>
+</html>
