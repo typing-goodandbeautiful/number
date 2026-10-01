@@ -20,6 +20,11 @@
     "htmlFile": "pages/page4.html"
   },
   {
+    "id": "page5",
+    "codes": ["america"],
+    "htmlFile": "pages/page5.html"
+  },
+  {
     "id": "expired",
     "codes": ["adminyo"],
     "htmlFile": "pages/expired.html"
