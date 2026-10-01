@@ -1,7 +1,7 @@
 [
   {
     "id": "page1",
-    "codes": ["adminyeah"],
+    "codes": ["theadmin"],
     "htmlFile": "pages/page1.html"
   },
   {
@@ -20,7 +20,7 @@
     "htmlFile": "pages/page4.html"
   },
   {
-    "id": "expired-codes",
+    "id": "expired",
     "codes": ["adminyo"],
     "htmlFile": "pages/expired.html"
   }
